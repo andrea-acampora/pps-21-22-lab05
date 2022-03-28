@@ -85,7 +85,7 @@ enum List[A]:
 
   def span(pred: A => Boolean): (List[A], List[A]) =
     var isTrueSplit: Boolean = true
-    partition(x => {isTrueSplit = isTrueSplit && pred(x); isTrueSplit })
+    partitionWithRecursion({x => isTrueSplit = isTrueSplit && pred(x); isTrueSplit })
 
   def spanWithRecursion(pred: A => Boolean): (List[A], List[A]) =
     @tailrec
@@ -96,9 +96,20 @@ enum List[A]:
     _span(this, Nil(), Nil(), pred)
 
   /** @throws UnsupportedOperationException if the list is empty */
-  def reduce(op: (A, A) => A): A = ???
+  def reduce(op: (A, A) => A): A = this match
+    case h :: t => t.foldLeft(h)(op)
+    case _ => throw UnsupportedOperationException()
 
   def takeRight(n: Int): List[A] = ???
+
+  def takeRightWithRecursion(n: Int): List[A] =
+    @tailrec
+    def _takeRight(list: List[A], n: Int): List[A] = list match
+      case h :: t if n > 0 => _takeRight(t, n - 1)
+      case _ => list
+    _takeRight(this, length - n)
+
+  def collect[A, B](partialFunction: PartialFunction[A, B]) = ???
 
 // Factories
 object List:
@@ -112,13 +123,13 @@ object List:
     if n == 0 then Nil() else elem :: of(elem, n - 1)
 
 @main def checkBehaviour(): Unit =
-  val reference = List(1, 2, 3, 4, 5, 6)
+  val reference = List(1, 2, 3, 4)
   println(reference.zipRight) // List((1, 0), (2, 1), (3, 2), (4, 3))
   println(reference.partition(_ % 2 == 0)) // (List(2, 4), List(1, 3))
   println(reference.span(_ % 2 != 0)) // (List(1), List(2, 3, 4))
-//  println(reference.span(_ < 3)) // (List(1, 2), List(3, 4))
-//  println(reference.reduce(_ + _)) // 10
-//  try Nil.reduce[Int](_ + _)
-//  catch case ex: Exception => println(ex) // prints exception
-//  println(List(10).reduce(_ + _)) // 10
-//  println(reference.takeRight(3)) // List(2, 3, 4)
+  println(reference.span(_ < 3)) // (List(1, 2), List(3, 4))
+  println(reference.reduce(_ + _)) // 10
+  try Nil.reduce[Int](_ + _)
+    catch case ex: Exception => println(ex) // prints exception
+  println(List(10).reduce(_ + _)) // 10
+  println(reference.takeRight(3)) // List(2, 3, 4)
