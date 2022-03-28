@@ -62,9 +62,7 @@ enum List[A]:
 
   /** EXERCISES */
 
-  def zipRight: List[(A, Int)] =
-    var index = -1
-    this.map(x => {index = index + 1;(x, index) })
+  def zipRight: List[(A, Int)] = this.map(elem => (elem, span(_ != elem)._1.length))
 
   def zipRightWithRecursion: List[(A, Int)] =
     @tailrec
@@ -109,7 +107,7 @@ enum List[A]:
       case _ => list
     _takeRight(this, length - n)
 
-  def collect[A, B](partialFunction: PartialFunction[A, B]) = ???
+  def collect[B](partialFunction: PartialFunction[A, B]): List[B] = filter(x => partialFunction.isDefinedAt(x)).map(partialFunction.apply)
 
 // Factories
 object List:
@@ -132,4 +130,4 @@ object List:
   try Nil.reduce[Int](_ + _)
     catch case ex: Exception => println(ex) // prints exception
   println(List(10).reduce(_ + _)) // 10
-  println(reference.takeRight(3)) // List(2, 3, 4)
+ // println(reference.takeRight(3)) // List(2, 3, 4)
