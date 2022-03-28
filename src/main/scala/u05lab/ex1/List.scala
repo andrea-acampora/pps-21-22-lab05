@@ -71,34 +71,34 @@ enum List[A]:
       case _ => result
     _zipRight(this, 0, Nil())
 
-  def partition(pred: A => Boolean): (List[A], List[A]) = (filter(pred), filter(!pred(_)))
+  def partition(predicate: A => Boolean): (List[A], List[A]) = (filter(predicate), filter(!predicate(_)))
 
-  def partitionWithRecursion(pred: A => Boolean): (List[A], List[A]) =
+  def partitionWithRecursion(predicate: A => Boolean): (List[A], List[A]) =
     @tailrec
     def _partition(myList: List[A], trueList: List[A], falseList: List[A]): (List[A], List[A]) = myList match
-      case h :: t if pred(h) => _partition(t, trueList.append(h :: Nil()), falseList)
+      case h :: t if predicate(h) => _partition(t, trueList.append(h :: Nil()), falseList)
       case h :: t => _partition(t,trueList,falseList.append(h :: Nil()))
       case _ => (trueList, falseList)
     _partition(this, Nil(), Nil())
 
-  def span(pred: A => Boolean): (List[A], List[A]) =
+  def span(predicate: A => Boolean): (List[A], List[A]) =
     var isTrueSplit: Boolean = true
-    partitionWithRecursion({x => isTrueSplit = isTrueSplit && pred(x); isTrueSplit })
+    partitionWithRecursion({x => isTrueSplit = isTrueSplit && predicate(x); isTrueSplit })
 
-  def spanWithRecursion(pred: A => Boolean): (List[A], List[A]) =
+  def spanWithRecursion(predicate: A => Boolean): (List[A], List[A]) =
     @tailrec
-    def _span(myList: List[A], trueSplitList: List[A], falseSplitList: List[A], pred: A => Boolean): (List[A], List[A]) = myList match
-      case h :: t if pred (h) => _span(t, trueSplitList.append(h :: Nil()), falseSplitList, pred)
+    def _span(myList: List[A], trueSplitList: List[A], falseSplitList: List[A], predicate: A => Boolean): (List[A], List[A]) = myList match
+      case h :: t if predicate (h) => _span(t, trueSplitList.append(h :: Nil()), falseSplitList, predicate)
       case h :: t => _span(t, trueSplitList, falseSplitList.append(h :: Nil()), _ => false)
       case _ => (trueSplitList, falseSplitList)
-    _span(this, Nil(), Nil(), pred)
+    _span(this, Nil(), Nil(), predicate)
 
   /** @throws UnsupportedOperationException if the list is empty */
   def reduce(op: (A, A) => A): A = this match
     case h :: t => t.foldLeft(h)(op)
     case _ => throw UnsupportedOperationException()
 
-  def takeRight(n: Int): List[A] = ???
+  def takeRight(n: Int): List[A] = span(_ != get(length- n).get)._2
 
   def takeRightWithRecursion(n: Int): List[A] =
     @tailrec
@@ -122,12 +122,6 @@ object List:
 
 @main def checkBehaviour(): Unit =
   val reference = List(1, 2, 3, 4)
-  println(reference.zipRight) // List((1, 0), (2, 1), (3, 2), (4, 3))
-  println(reference.partition(_ % 2 == 0)) // (List(2, 4), List(1, 3))
-  println(reference.span(_ % 2 != 0)) // (List(1), List(2, 3, 4))
-  println(reference.span(_ < 3)) // (List(1, 2), List(3, 4))
-  println(reference.reduce(_ + _)) // 10
   try Nil.reduce[Int](_ + _)
     catch case ex: Exception => println(ex) // prints exception
-  println(List(10).reduce(_ + _)) // 10
  // println(reference.takeRight(3)) // List(2, 3, 4)
