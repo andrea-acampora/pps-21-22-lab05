@@ -82,8 +82,11 @@ enum List[A]:
     _partition(this, Nil(), Nil())
 
   def span(predicate: A => Boolean): (List[A], List[A]) =
-    var isTrueSplit: Boolean = true
-    partitionWithRecursion({x => isTrueSplit = isTrueSplit && predicate(x); isTrueSplit })
+    this.foldLeft((List.Nil[A](), List.Nil[A]()))((acc, elem) =>
+      if predicate(elem) && acc._2.isEmpty
+        then (acc._1.append(elem :: Nil()), acc._2)
+        else (acc._1, acc._2.append(elem :: Nil())))
+
 
   def spanWithRecursion(predicate: A => Boolean): (List[A], List[A]) =
     @tailrec
