@@ -1,11 +1,11 @@
 package u05lab.ex1
 
 import u05lab.ex1.List
+import u05lab.ex1.List.Nil
+
 
 import scala.annotation.tailrec
 
-// Ex 1. implement the missing methods both with recursion or with using fold, map, flatMap, and filters
-// List as a pure interface
 enum List[A]:
   case ::(h: A, t: List[A])
   case Nil()
@@ -64,6 +64,10 @@ enum List[A]:
 
   def zipRight: List[(A, Int)] = this.map(elem => (elem, span(_ != elem)._1.length))
 
+  def zipRightWithFoldLeft: List[(A, Int)] =
+    foldLeft[List[(A, Int)]](Nil())((acc, elem) =>
+      if acc.isEmpty then List((elem, 0)) else acc.append(List((elem, acc.get(acc.length - 1).get._2 + 1))))
+
   def zipRightWithRecursion: List[(A, Int)] =
     @tailrec
     def _zipRight(l: List[A], index: Int, result: List[(A, Int)]): List[(A, Int)] = l match
@@ -72,6 +76,10 @@ enum List[A]:
     _zipRight(this, 0, Nil())
 
   def partition(predicate: A => Boolean): (List[A], List[A]) = (filter(predicate), filter(!predicate(_)))
+
+  def partitionWithFoldLeft(predicate: A => Boolean): (List[A], List[A]) =
+    foldLeft(Nil(), Nil())((acc, elem) =>
+      if predicate(elem) then (acc._1.append(List(elem)), acc._2) else (acc._1, acc._2.append(List(elem))))
 
   def partitionWithRecursion(predicate: A => Boolean): (List[A], List[A]) =
     @tailrec
@@ -86,7 +94,6 @@ enum List[A]:
       if predicate(elem) && acc._2.isEmpty
         then (acc._1.append(elem :: Nil()), acc._2)
         else (acc._1, acc._2.append(elem :: Nil())))
-
 
   def spanWithRecursion(predicate: A => Boolean): (List[A], List[A]) =
     @tailrec
@@ -122,9 +129,3 @@ object List:
 
   def of[A](elem: A, n: Int): List[A] =
     if n == 0 then Nil() else elem :: of(elem, n - 1)
-
-@main def checkBehaviour(): Unit =
-  val reference = List(1, 2, 3, 4)
-  try Nil.reduce[Int](_ + _)
-    catch case ex: Exception => println(ex) // prints exception
- // println(reference.takeRight(3)) // List(2, 3, 4)
